@@ -59,3 +59,25 @@ jobs:
         with:
           name: ${{ matrix.target }}
           path: .pio/build/${{ matrix.target }}/HDZERO_TX.bin
+
+  publish:
+    # fr0gOS: commit every target's HDZERO_TX.bin to the fr0g-builds branch, so the firmware can be fetched with git
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: out
+      - name: Commit firmware
+        run: |
+          cd out
+          git init -q -b fr0g-builds
+          git config user.name "fr0g-builds"
+          git config user.email "builds@users.noreply.github.com"
+          echo "${GITHUB_SHA}" > SOURCE_COMMIT
+          git add -A
+          git commit -qm "builds of ${GITHUB_REF_NAME} @ ${GITHUB_SHA::7}"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" fr0g-builds

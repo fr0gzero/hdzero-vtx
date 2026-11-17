@@ -1396,7 +1396,9 @@ uint8_t parse_displayport(uint8_t len) {
                 osd_ready = 0;
                 return 0;
             } else if (msp_rx_buf[0] == SUBCMD_WRITE) {
-                osd_ready = 0;
+                // fr0gOS: keep streaming rows to the goggles while the FC writes the next frame. Stock firmware
+                // stopped here and only sent rows in the short gap between DRAW and the next WRITE, so a busy
+                // OSD crawled at ~5-8 updates a second.
                 state_osd = MSP_OSD_LOC;
             } else if (msp_rx_buf[0] == SUBCMD_DRAW) {
                 osd_ready = 1;
@@ -1436,10 +1438,8 @@ uint8_t parse_displayport(uint8_t len) {
             if (len == 0)
                 return 0;
             else {
-                if (msp_cmp_fc_variant("BTFL"))
-                    page_extend = 0;
-                else
-                    page_extend = msp_rx_buf[3] & 0x01;
+                // fr0gOS: honour the font-page bit for Betaflight too (glyphs 256-511)
+                page_extend = msp_rx_buf[3] & 0x01;
                 state_osd = MSP_OSD_WRITE;
             }
             break;
