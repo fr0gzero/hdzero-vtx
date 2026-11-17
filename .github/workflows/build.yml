@@ -2,7 +2,7 @@ name: hdzero-vtx build
 on: [push, pull_request]
 jobs:
   targets:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       targets: ${{ steps.set-targets.outputs.targets }}
     steps:
@@ -17,7 +17,7 @@ jobs:
       fail-fast: false
       matrix:
         target: ${{fromJSON(needs.targets.outputs.targets)}}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Inject slug/short variables
         uses: rlespinasse/github-slug-action@v4
@@ -28,7 +28,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.9'
+          python-version: '3.12'
 
       - name: Cache pip
         uses: actions/cache@v4
@@ -63,7 +63,7 @@ jobs:
   publish:
     # fr0gOS: commit every target's HDZERO_TX.bin to the fr0g-builds branch, so the firmware can be fetched with git
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
     if: github.event_name == 'push'
